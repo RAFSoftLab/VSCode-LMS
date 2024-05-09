@@ -37,7 +37,7 @@
     "commands": [
       {
         "command": "vscode-lms.helloWorld",
-        "title": "Hello World"
+        "title": "Clone Repository Project"
       },
       {
         "command": "vscode-lms.refresh",

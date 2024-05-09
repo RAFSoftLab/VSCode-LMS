@@ -1,5 +1,28 @@
 import * as vscode from 'vscode';
 import { SidebarProvider } from './SidebarProvider';
+import simpleGit, { SimpleGit } from 'simple-git';
+
+
+const sshKeyPath = "C:/Users/P53/.ssh/id_rsa";
+
+// Funkcija za kloniranje repozitorijuma
+// async function cloneRepository() {
+//   // Dobijanje putanje do trenutno otvorenog projekta
+//   const currentWorkspace = vscode.workspace.workspaceFolders;
+//   if (!currentWorkspace || !currentWorkspace.length) {
+//       vscode.window.showErrorMessage('No workspace opened.');
+//       return;
+//   }
+
+//   const projectPath = currentWorkspace[0].uri.fsPath;
+
+//   // Kloniranje repozitorijuma
+//   const git: SimpleGit = simpleGit();
+//   await git.clone("C:/Users/Petar/local-git-server/local-git-server", projectPath);
+
+//   // Obaveštenje o uspešnom kloniranju
+//   vscode.window.showInformationMessage("Repository cloned successfully!");
+// }
 
 export function activate(context: vscode.ExtensionContext) {
     const sidebarProvider = new SidebarProvider(context.extensionUri);
@@ -9,25 +32,39 @@ export function activate(context: vscode.ExtensionContext) {
             sidebarProvider
           )
         );
-	context.subscriptions.push(vscode.commands.registerCommand('vscode-lms.helloWorld', () => {
+	  context.subscriptions.push(vscode.commands.registerCommand('vscode-lms.helloWorld', async() => {
         // Kreiranje i prikazivanje panela
-       
+       // Dobijanje putanje do trenutno otvorenog projekta
+      const currentWorkspace = vscode.workspace.workspaceFolders;
+      if (!currentWorkspace || !currentWorkspace.length) {
+        vscode.window.showErrorMessage('No workspace opened.');
+        return;
+      }
+
+      const projectPath = currentWorkspace[0].uri.fsPath;
+
+      // Kloniranje repozitorijuma
+      const git: SimpleGit = simpleGit();
+      await git.clone("C:/Users/Petar/local-git-server/local-git-server", projectPath);
+
+      // Obaveštenje o uspešnom kloniranju
+      vscode.window.showInformationMessage("Repository cloned successfully!");
     }));
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand("vscode-lms.refresh", async () => {
-          // HelloWorldPanel.kill();
-          // HelloWorldPanel.createOrShow(context.extensionUri);
-          await vscode.commands.executeCommand("workbench.action.closeSidebar");
-          await vscode.commands.executeCommand(
-            "workbench.view.extension.vscode-lms-sidebar-view"
+  context.subscriptions.push(
+      vscode.commands.registerCommand("vscode-lms.refresh", async () => {
+        // HelloWorldPanel.kill();
+        // HelloWorldPanel.createOrShow(context.extensionUri);
+        await vscode.commands.executeCommand("workbench.action.closeSidebar");
+        await vscode.commands.executeCommand(
+          "workbench.view.extension.vscode-lms-sidebar-view"
+        );
+        setTimeout(() => {
+          vscode.commands.executeCommand(
+            "workbench.action.webview.openDeveloperTools"
           );
-          setTimeout(() => {
-            vscode.commands.executeCommand(
-              "workbench.action.webview.openDeveloperTools"
-            );
-          }, 500);
-        })
-      );
+        }, 500);
+      })
+    );
 }
 
