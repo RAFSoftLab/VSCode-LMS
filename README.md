@@ -24,3 +24,49 @@
 **Nastavnici**: Nastavnici koriste CodeExam za postavljanje zadataka i olakšano pregledanje ispita i kolokvijuma.
 
 **VSCode LMS** ekstenzija je alat koji olakšava pripremu za ispite i kolokvijume iz programiranja, pružajući studentima intuitivno okruženje za rešavanje direktno u VS Code-u.
+
+## Uputstvo za instaliranje/pokretanje ekstenzije u Visual Studio Code-u
+
+Da biste instalirali sve dependesije navedene u **package.json**` fajlu za VSCode LMS projekat (uključujući TypeScript dependesije), koristite komandu  **npm install**. 
+
+### Locirajte direktorijum vašeg projekta:
+
+Otvorite terminal ili komandni prozor i promenite direktorijum (komandom cd) do glavnog direktorijuma vašeg projekta gde se nalazi package.json.
+
+### Pokrenite npm install komandu:
+> npm install
+
+Ova komanda će pročitati package.json fajl u trenutnom direktorijumu, preuzeti sve navedene zavisnosti i instalirati ih u node_modules direktorijum unutar vašeg projekta.
+
+### Napomene:
+Pre pokretanja ovih komandi, uverite se da imate Node.js i npm instalirane globalno na svom sistemu.
+
+Nakon izvršavanja npm install komande, vaš projekat će imati sve neophodne zavisnosti instalirane i spremne za razvoj ili deploy.
+
+### Pokretanje projekta: 
+Pokrenite sledeće komande:
+>npm run watch
+>npm run compile
+### Ručna Instalacija koristeći `.vsix` Fajl
+Možete ručno instalirati ekstenziju koristeći njen `.vsix` fajl
+1.  **Preuzmite `.vsix` Fajl:**
+    
+    -   Prvo, morate doći do `.vsix` fajla ekstenzije. Ovaj fajl možete dobiti direktno od autora ili sa lokalnog repozitorijuma gde je dostupan.
+2.  **Instalacija Ekstenzije u VS Code:**
+    
+	    -   Otvorite Visual Studio Code.
+	    -   Idite na `View -> Command Palette...` (ili koristite `Ctrl+Shift+P` / `Cmd+Shift+P` na Mac-u).
+	    -   Ukucajte "Install from VSIX" i odaberite tu opciju kada se pojavi u listi komandi.
+	    -   Izaberite `.vsix` fajl koji ste prethodno preuzeli i otvorite ga.
+	    -   VS Code će sada instalirati ekstenziju.
+3.  **Restartovanje VS Code-a:**
+    
+    -   Zatvorite sve instance Visual Studio Code-a koje su otvorene.
+    -   Ponovo pokrenite VS Code.
+4.  **Provera Instalacije:**
+
+    -   Nakon restartovanja, proverite da li je ekstenzija uspešno instalirana otvaranjem `View -> Extensions` u VS Code-u.
+### Napomene:
+
+-   **Održavanje i Ažuriranje:**
+    -   Ručno instalirane ekstenzije neće automatski ažurirati kao one sa Marketplace-a. Morate ručno pratiti ažuriranja i ponovo instalirati nove verzije.
