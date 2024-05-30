@@ -56,21 +56,32 @@ Možete ručno instalirati ekstenziju koristeći njen `.vsix` fajl
 1.  **Preuzmite `.vsix` Fajl:**
     
     -   Prvo, morate doći do `.vsix` fajla ekstenzije. Ovaj fajl možete dobiti direktno od autora ili sa lokalnog repozitorijuma gde je dostupan.
-2.  **Instalacija Ekstenzije u VS Code:**
+2. **Ručna Izrada `.vsix` Fajla:**
+	- Možete generisati `.vsix` fajl koristeći alate poput `vsce` (Visual Studio Code Extension Manager):
+	 ```
+	 npm install -g vsce  
+	 cd my-extension       
+	 vsce package 
+	 ```
+ 3.  **Instalacija Ekstenzije u VS Code:**
     
-    -   Otvorite Visual Studio Code.
-    -   Idite na `View -> Command Palette...` (ili koristite `Ctrl+Shift+P` / `Cmd+Shift+P` na Mac-u).
-    -   Ukucajte "Install from VSIX" i odaberite tu opciju kada se pojavi u listi komandi.
-    -   Izaberite `.vsix` fajl koji ste prethodno preuzeli i otvorite ga.
-    -   VS Code će sada instalirati ekstenziju.
-3.  **Restartovanje VS Code-a:**
+	    -   Otvorite Visual Studio Code.
+	    -   Idite na `View -> Command Palette...` (ili koristite `Ctrl+Shift+P` / `Cmd+Shift+P` na Mac-u).
+	    -   Ukucajte "Install from VSIX" i odaberite tu opciju kada se pojavi u listi komandi.
+	    -   Izaberite `.vsix` fajl koji ste prethodno preuzeli i otvorite ga.
+	    -   VS Code će sada instalirati ekstenziju.
+4.  **Restartovanje VS Code-a:**
     
     -   Zatvorite sve instance Visual Studio Code-a koje su otvorene.
     -   Ponovo pokrenite VS Code.
-4.  **Provera Instalacije:**
+5.  **Provera Instalacije:**
 
     -   Nakon restartovanja, proverite da li je ekstenzija uspešno instalirana otvaranjem `View -> Extensions` u VS Code-u.
 ### Napomene:
+
+-   **Održavanje i Ažuriranje:**
+    -   Ručno instalirane ekstenzije neće automatski ažurirati kao one sa Marketplace-a. Morate ručno pratiti ažuriranja i ponovo instalirati nove verzije.
+
 
 -   **Održavanje i Ažuriranje:**
     -   Ručno instalirane ekstenzije neće automatski ažurirati kao one sa Marketplace-a. Morate ručno pratiti ažuriranja i ponovo instalirati nove verzije.
