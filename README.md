@@ -34,7 +34,9 @@ Da biste instalirali sve dependesije navedene u **package.json**` fajlu za VSCod
 Otvorite terminal ili komandni prozor i promenite direktorijum (komandom cd) do glavnog direktorijuma vašeg projekta gde se nalazi package.json.
 
 ### Pokrenite npm install komandu:
-> npm install
+```
+npm install
+```
 
 Ova komanda će pročitati package.json fajl u trenutnom direktorijumu, preuzeti sve navedene zavisnosti i instalirati ih u node_modules direktorijum unutar vašeg projekta.
 
@@ -45,8 +47,10 @@ Nakon izvršavanja npm install komande, vaš projekat će imati sve neophodne za
 
 ### Pokretanje projekta: 
 Pokrenite sledeće komande:
->npm run watch
->npm run compile
+```
+ npm run watch
+ npm run compile
+ ```
 ### Ručna Instalacija koristeći `.vsix` Fajl
 Možete ručno instalirati ekstenziju koristeći njen `.vsix` fajl
 1.  **Preuzmite `.vsix` Fajl:**
@@ -54,11 +58,11 @@ Možete ručno instalirati ekstenziju koristeći njen `.vsix` fajl
     -   Prvo, morate doći do `.vsix` fajla ekstenzije. Ovaj fajl možete dobiti direktno od autora ili sa lokalnog repozitorijuma gde je dostupan.
 2.  **Instalacija Ekstenzije u VS Code:**
     
-	    -   Otvorite Visual Studio Code.
-	    -   Idite na `View -> Command Palette...` (ili koristite `Ctrl+Shift+P` / `Cmd+Shift+P` na Mac-u).
-	    -   Ukucajte "Install from VSIX" i odaberite tu opciju kada se pojavi u listi komandi.
-	    -   Izaberite `.vsix` fajl koji ste prethodno preuzeli i otvorite ga.
-	    -   VS Code će sada instalirati ekstenziju.
+    -   Otvorite Visual Studio Code.
+    -   Idite na `View -> Command Palette...` (ili koristite `Ctrl+Shift+P` / `Cmd+Shift+P` na Mac-u).
+    -   Ukucajte "Install from VSIX" i odaberite tu opciju kada se pojavi u listi komandi.
+    -   Izaberite `.vsix` fajl koji ste prethodno preuzeli i otvorite ga.
+    -   VS Code će sada instalirati ekstenziju.
 3.  **Restartovanje VS Code-a:**
     
     -   Zatvorite sve instance Visual Studio Code-a koje su otvorene.
