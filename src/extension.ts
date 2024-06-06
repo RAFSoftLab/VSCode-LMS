@@ -1,15 +1,12 @@
 import * as vscode from 'vscode';
 import { SidebarProvider } from './SidebarProvider';
 import simpleGit, { SimpleGit } from 'simple-git';
-import axios, {type AxiosResponse}  from 'axios';
-
+import * as os from 'os';
+import axios, { type AxiosResponse } from 'axios';
 
 const username = "raf";
 const password = "masterSI2023";
 
-function getComputerUsername(): string {
-  return vscode.env.machineId; // Koristimo vscode.env.machineName da bismo dobili korisničko ime računara
-}
 export function activate(context: vscode.ExtensionContext) {
   // Kreiranje i prikazivanje panela
   const sidebarProvider = new SidebarProvider(context.extensionUri);
@@ -19,40 +16,68 @@ export function activate(context: vscode.ExtensionContext) {
       sidebarProvider
     )
   );
-  function getComputerUsername(): string {
-    return vscode.env.machineId; // Koristimo vscode.env.machineName da bismo dobili korisničko ime računara
-}
-  context.subscriptions.push(vscode.commands.registerCommand('vscode-lms.username', async () => {
+  function getUsername(): string {
+    return os.userInfo().username;
+  }
+  function parseStudentId(input: string): string {
+    // Izvuci poslednji karakter (program)
+    const program = input.slice(-1).toUpperCase();
+
+    // Izvuci sve brojeve iz input stringa
+    const numbers = input.match(/\d+/g)?.join("") ?? "";
+
+    // Podeli brojeve na indeks i godinu
+    const yearPart = numbers.slice(-2);
+    const year = (parseInt(yearPart) + 2000).toString();
+    const index = numbers.slice(0, -2);
+
+    // Kombinuj ih u željeni format
+    return `${program}${index}${year}`;
+  }
+  context.subscriptions.push(vscode.commands.registerCommand('vscode-lms.startLMS', async () => {
+    //const studentusername = getUsername();
+    const studentuser = "parnautovic4823m";
+    const studentusername = parseStudentId("parnautovic4823m");
+
+    sidebarProvider._view?.webview.postMessage({
+      type: "user-info",
+      value: studentuser,
+    });
+
     try {
       // Endpoint za dohvat studenata
-      const endpoint = 'http://192.168.124.28:8091/api/v1/students';
+      const endpoint = 'http://192.168.124.28:8091/api/v1/students/' + studentusername;
 
       // Token za autorizaciju
       const API_TOKEN = "L2aTA643Z0UJ43bIdBymFExVbpqZg7v5QJafYh6KFRjl04eV6w4TtdppkX41hEwo";
 
       // Konfiguracija zahteva sa tokenom
       const config = {
-          headers: {
-              'Authorization': `Bearer ${API_TOKEN}`
-          }
+        headers: {
+          'Authorization': `Bearer ${API_TOKEN}`
+        }
       };
+      vscode.window.showInformationMessage(studentusername);
 
       // Izvršavanje GET zahteva sa autorizacijom
       const response: AxiosResponse = await axios.get(endpoint, config);
 
       // Provera da li je odgovor uspešan (status 200)
       if (response.status === 200) {
-          // Prikazivanje rezultata u izlaznom prozoru
-          vscode.window.showInformationMessage(JSON.stringify(response.data));
+        sidebarProvider._view?.webview.postMessage({
+          type: "student-info",
+          value: response.data,
+        });
       } else {
-          // Ukoliko odgovor nije uspešan, prikaži odgovarajuću poruku
-          throw new Error(`Error fetching students: ${response.statusText}`);
+        // Ukoliko odgovor nije uspešan, prikaži odgovarajuću poruku
+        throw new Error(`Error fetching students: ${response.statusText}`);
       }
-  } catch (error:any) {
+    } catch (error: any) {
       // Prikazivanje greške ako dođe do problema
       vscode.window.showErrorMessage(`Error fetching students: ${error.message}`);
-  }
+    }
   }));
+
   context.subscriptions.push(vscode.commands.registerCommand('vscode-lms.helloWorld', async () => {
     // Dobijanje putanje do trenutno otvorenog projekta
     const currentWorkspace = vscode.workspace.workspaceFolders;

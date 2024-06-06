@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
 import axios, { type AxiosResponse } from 'axios';
+import * as fs from 'fs';
+import * as path from 'path';
+import TokenManager from './TokenManager';
 
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
@@ -23,13 +26,56 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
-        case "onInfo": {
+        // case "onInfo": {
+        //   if (!data.value) {
+        //     return;
+        //   }
+
+        //   try {
+        //     // Endpoint za dohvat studenata
+        //     const endpoint = 'http://192.168.124.28:8091/api/v1/students/' + data.value;
+
+        //     // Token za autorizaciju
+        //     const API_TOKEN = "L2aTA643Z0UJ43bIdBymFExVbpqZg7v5QJafYh6KFRjl04eV6w4TtdppkX41hEwo";
+
+        //     // Konfiguracija zahteva sa tokenom
+        //     const config = {
+        //       headers: {
+        //         'Authorization': `Bearer ${API_TOKEN}`
+        //       }
+        //     };
+        //     vscode.window.showInformationMessage(data.value);
+
+        //     // Izvršavanje GET zahteva sa autorizacijom
+        //     const response: AxiosResponse = await axios.get(endpoint, config);
+
+        //     // Provera da li je odgovor uspešan (status 200)
+        //     if (response.status === 200) {
+        //       webviewView.webview.postMessage({
+        //         type: "student-info",
+        //         value: response.data,
+        //       });
+        //     } else {
+        //       // Ukoliko odgovor nije uspešan, prikaži odgovarajuću poruku
+        //       throw new Error(`Error fetching students: ${response.statusText}`);
+        //     }
+        //   } catch (error: any) {
+        //     // Prikazivanje greške ako dođe do problema
+        //     vscode.window.showErrorMessage(`Error fetching students: ${error.message}`);
+        //   }
+        //   break;
+        // }
+        case "authorize-token": {
           if (!data.value) {
             return;
           }
           try {
+            //const studentId = parseStudentId(data.value);
+            const studentId = parseStudentId("parnautovic4823m");
+            const filePath = path.join('C:\\Users\\Petar', 'students.txt');
+
             // Endpoint za dohvat studenata
-            const endpoint = 'http://192.168.124.28:8091/api/v1/students';
+            const endpoint = `http://192.168.124.28:8091/api/v1/students/${studentId}/authorize`;
 
             // Token za autorizaciju
             const API_TOKEN = "L2aTA643Z0UJ43bIdBymFExVbpqZg7v5QJafYh6KFRjl04eV6w4TtdppkX41hEwo";
@@ -37,26 +83,34 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             // Konfiguracija zahteva sa tokenom
             const config = {
               headers: {
-                'Authorization': `Bearer ${API_TOKEN}`
+                'Authorization': `Bearer ${API_TOKEN}`,
+                'Content-Type': 'application/json'
               }
             };
 
-            // Izvršavanje GET zahteva sa autorizacijom
-            const response: AxiosResponse = await axios.get(endpoint, config);
+            // Izvršavanje POST zahteva sa autorizacijom
+            const response: AxiosResponse = await axios.post(endpoint, {}, config);
 
             // Provera da li je odgovor uspešan (status 200)
             if (response.status === 200) {
-              // Prikazivanje rezultata u izlaznom prozoru
-              vscode.window.showInformationMessage(JSON.stringify(response.data));
-            } else {
+              const message = JSON.parse(response.data.message); // Parsiranje `message` svojstva kao JSON
+              const value = message.value; // Izdvajanje `value`
+
+              // Postavljanje tokena u singleton
+              const tokenManager = TokenManager.getInstance();
+              tokenManager.setToken(value);
+
+              console.log(value);
+              fs.writeFileSync(filePath, value, 'utf-8'); // Upisivanje vrednosti u fajlelse {
+            }
+            else {
               // Ukoliko odgovor nije uspešan, prikaži odgovarajuću poruku
-              throw new Error(`Error fetching students: ${response.statusText}`);
+              throw new Error(`Error post students: ${response.statusText}`);
             }
           } catch (error: any) {
             // Prikazivanje greške ako dođe do problema
-            vscode.window.showErrorMessage(`Error fetching students: ${error.message}`);
+            vscode.window.showErrorMessage(`Error post students: ${error.message}`);
           }
-          break;
         }
         case "onError": {
           if (!data.value) {
@@ -67,6 +121,22 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         }
       }
     });
+
+    function parseStudentId(input: string): string {
+      // Izvuci poslednji karakter (program)
+      const program = input.slice(-1).toUpperCase();
+
+      // Izvuci sve brojeve iz input stringa
+      const numbers = input.match(/\d+/g)?.join("") ?? "";
+
+      // Podeli brojeve na indeks i godinu
+      const yearPart = numbers.slice(-2);
+      const year = (parseInt(yearPart) + 2000).toString();
+      const index = numbers.slice(0, -2);
+
+      // Kombinuj ih u željeni format
+      return `${program}${index}${year}`;
+    }
   }
 
   public revive(panel: vscode.WebviewView) {
@@ -86,7 +156,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const styleMainUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebar.css")
     );
-
 
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();

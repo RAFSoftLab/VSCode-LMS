@@ -44,8 +44,8 @@
         "title": "Refresh"
       },
       {
-        "command": "vscode-lms.username",
-        "title": "UserName"
+        "command": "vscode-lms.startLMS",
+        "title": "Start LMS"
       }
     ]
   },
