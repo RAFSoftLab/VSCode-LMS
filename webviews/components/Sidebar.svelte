@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
 
   let firstName: string = "";
   let lastName: string = "";
@@ -25,9 +25,35 @@
     return `${program}${index}${year}`;
   }
 
+  // Funkcija za čuvanje podataka u lokalnom skladištu
+  function saveDataLocally() {
+    const data = {
+      firstName,
+      lastName,
+      program,
+      number,
+      year,
+      classroom,
+      studentId,
+    };
+    localStorage.setItem("studentData", JSON.stringify(data));
+  }
+
   onMount(async () => {
+    const savedData = localStorage.getItem("studentData");
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      firstName = parsedData.firstName || "";
+      lastName = parsedData.lastName || "";
+      program = parsedData.program || "";
+      number = parsedData.number || 0;
+      year = parsedData.year || 0;
+      classroom = parsedData.classroom || "";
+      studentId = parsedData.studentId || "";
+    }
     window.addEventListener("message", async (event) => {
-      const message = event.data; // The json data that the extension sent
+      const message = event.data; // Podaci u JSON formatu koje je ekstenzija poslala
+
       switch (message.type) {
         case "student-info": {
           console.log(message.value);
@@ -45,7 +71,22 @@
           studentId = parseStudentId(message.value);
         }
       }
+      // Čuvanje podataka u lokalnom skladištu prilikom svake promene
+      saveDataLocally();
     });
+  });
+  onDestroy(() => {
+    // Brisanje podataka iz lokalnog skladišta kada se komponenta uništi
+    //localStorage.clear();
+    localStorage.getItem("studentData");
+    // Resetovanje vrednosti let promenljivih
+    firstName = "";
+    lastName = "";
+    program = "";
+    number = 0;
+    year = 0;
+    classroom = "";
+    studentId = "";
   });
 </script>
 

@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
-import axios, { type AxiosResponse } from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
-import TokenManager from './TokenManager';
-
+import * as authenticate from "./authenticate";
+import TokenManager from "./TokenManager";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
@@ -69,48 +68,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           if (!data.value) {
             return;
           }
-          try {
-            //const studentId = parseStudentId(data.value);
-            const studentId = parseStudentId("parnautovic4823m");
-            const filePath = path.join('C:\\Users\\Petar', 'students.txt');
+          //Autorizacija studenta
+          await authenticate.authorizeStudent(data.value);
+          const tokenManager = TokenManager.getInstance();
 
-            // Endpoint za dohvat studenata
-            const endpoint = `http://192.168.124.28:8091/api/v1/students/${studentId}/authorize`;
-
-            // Token za autorizaciju
-            const API_TOKEN = "L2aTA643Z0UJ43bIdBymFExVbpqZg7v5QJafYh6KFRjl04eV6w4TtdppkX41hEwo";
-
-            // Konfiguracija zahteva sa tokenom
-            const config = {
-              headers: {
-                'Authorization': `Bearer ${API_TOKEN}`,
-                'Content-Type': 'application/json'
-              }
-            };
-
-            // Izvršavanje POST zahteva sa autorizacijom
-            const response: AxiosResponse = await axios.post(endpoint, {}, config);
-
-            // Provera da li je odgovor uspešan (status 200)
-            if (response.status === 200) {
-              const message = JSON.parse(response.data.message); // Parsiranje `message` svojstva kao JSON
-              const value = message.value; // Izdvajanje `value`
-
-              // Postavljanje tokena u singleton
-              const tokenManager = TokenManager.getInstance();
-              tokenManager.setToken(value);
-
-              console.log(value);
-              fs.writeFileSync(filePath, value, 'utf-8'); // Upisivanje vrednosti u fajlelse {
-            }
-            else {
-              // Ukoliko odgovor nije uspešan, prikaži odgovarajuću poruku
-              throw new Error(`Error post students: ${response.statusText}`);
-            }
-          } catch (error: any) {
-            // Prikazivanje greške ako dođe do problema
-            vscode.window.showErrorMessage(`Error post students: ${error.message}`);
+          const token = tokenManager.getToken();
+          console.log(token);
+          if (token) {
+            const repositoryData = await authenticate.getRepo(data.value, token, "OopZadatak1");
+            console.log('Repository data:', repositoryData);
+            // Brisanje svih stavki u radnom direktorijumu 
+            deleteAllItemsInWorkspace();
           }
+
         }
         case "onError": {
           if (!data.value) {
@@ -122,20 +92,48 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       }
     });
 
-    function parseStudentId(input: string): string {
-      // Izvuci poslednji karakter (program)
-      const program = input.slice(-1).toUpperCase();
+    async function deleteFolderRecursive(directoryPath: string, isRoot: boolean = false): Promise<void> {
+      if (fs.existsSync(directoryPath)) {
+        fs.readdirSync(directoryPath).forEach((file) => {
+          const curPath = path.join(directoryPath, file);
+          if (fs.lstatSync(curPath).isDirectory()) {
+            // Rekurzivno brisanje poddirektorijuma
+            deleteFolderRecursive(curPath);
+            if (['.git', '.vscode'].includes(path.basename(curPath))) {
+              // Brisanje .git i .vscode direktorijuma
+              deleteFolderRecursive(curPath);
+            } else {
+              // Rekurzivno brisanje poddirektorijuma
+              deleteFolderRecursive(curPath);
+            }
+          } else {
+            // Brisanje fajla ako nije direktorijum
+            fs.unlinkSync(curPath);
+          }
+        });
+        // Brisanje samog direktorijuma nakon brisanja svih sadržaja, osim ako je root direktorijum
+        if (!isRoot && !['.git', '.vscode'].includes(path.basename(directoryPath))) {
+          fs.rmdirSync(directoryPath);
+        }
+      }
+    }
 
-      // Izvuci sve brojeve iz input stringa
-      const numbers = input.match(/\d+/g)?.join("") ?? "";
+    // Funkcija za brisanje svih stavki u poddirektorijumima radnog direktorijuma
+    async function deleteAllItemsInWorkspace() {
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders) {
+        vscode.window.showErrorMessage('No workspace folders are open.');
+        return;
+      }
 
-      // Podeli brojeve na indeks i godinu
-      const yearPart = numbers.slice(-2);
-      const year = (parseInt(yearPart) + 2000).toString();
-      const index = numbers.slice(0, -2);
-
-      // Kombinuj ih u željeni format
-      return `${program}${index}${year}`;
+      for (const folder of workspaceFolders) {
+        try {
+          await deleteFolderRecursive(folder.uri.fsPath, true);
+          vscode.window.showInformationMessage(`All items deleted in ${folder.uri.fsPath}`);
+        } catch (error: any) {
+          vscode.window.showErrorMessage(`Error deleting items in ${folder.uri.fsPath}: ${error.message}`);
+        }
+      }
     }
   }
 

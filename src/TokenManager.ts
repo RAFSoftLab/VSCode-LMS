@@ -1,6 +1,7 @@
 class TokenManager {
     private static instance: TokenManager;
     private token: string | null = null;
+    private repoPath: string | null = null;
 
     private constructor() { }
 
@@ -18,5 +19,13 @@ class TokenManager {
     public getToken(): string | null {
         return this.token;
     }
+    public setRepoPath(repoPath: string): void {
+        this.repoPath = repoPath;
+    }
+
+    public getRepoPath(): string | null {
+        return this.repoPath;
+    }
 }
+
 export default TokenManager;
