@@ -107,6 +107,7 @@
 
   function handleCommitClick() {
     firstTimeLoaded = false;
+    tsvscode.postMessage({ type: "commit", value: studentId });
   }
 </script>
 

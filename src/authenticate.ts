@@ -84,7 +84,7 @@ export async function getFork(id: string, token: string) {
     try {
         //const studentId = parseStudentId(id);
         const studentId = parseStudentId("parnautovic4823m");
-        const fileName = `repopath_${uuidv4()}.txt`; // Generisanje nasumičnog imena fajla
+        const fileName = `forkbranchpath_${uuidv4()}.txt`; // Generisanje nasumičnog imena fajla
         const filePath = path.join('C:\\Users\\Petar', fileName);
         const endpoint = `http://192.168.124.28:8091/api/v1/students/${studentId}/repository/${token}/fork`;
 
@@ -139,9 +139,51 @@ export async function cloneRepo(repoPath: string) {
 
         // Obaveštenj e o uspešnom kloniranju
         vscode.window.showInformationMessage("Repository cloned successfully!");
-    } catch (error) {
+    } catch (error: any) {
         // Prikazivanje greške ako dođe do neuspeha
-        vscode.window.showErrorMessage(`Error cloning repository: ${error}`);
+        vscode.window.showErrorMessage(`Error cloning repository: ${error.message}`);
+    }
+}
+
+export async function pushToRepo(repoPath: string, branchName: string, message: string): Promise<boolean> {
+    const git = simpleGit(repoPath);
+
+    try {
+        // Provera da li postoji branch
+        const branches = await git.branchLocal();
+        const branchExists = branches.all.includes(branchName);
+
+        if (!branchExists) {
+            // Kreiranje i prebacivanje na novi branch
+            await git.checkoutLocalBranch(branchName);
+            vscode.window.showInformationMessage(`Branch '${branchName}' created and checked out.`);
+        } else {
+            // Prebacivanje na postojeći branch
+            await git.checkout(branchName);
+
+            // Pokušaj pull-a pre push-a
+            try {
+                const result = await git.pull('origin', branchName, {'--rebase': 'true'});
+                vscode.window.showInformationMessage("Repository successfully updated.");
+            } catch (pullError) {
+                vscode.window.showErrorMessage("Pull failed, check conflicts and repository status");
+                return false; // Ako pull ne uspe, prekinuti dalje izvršavanje
+            }
+        }
+
+        // Dodavanje promena
+        await git.add('./*');
+
+        // Kreiranje commit-a
+        await git.commit(message);
+
+        // Push promena
+        await git.push('origin', branchName);
+        vscode.window.showInformationMessage("Push to repository completed successfully.");
+        return true;
+    } catch (error: any) {
+        vscode.window.showErrorMessage(`Error pushing to repository: ${error.message}`);
+        return false;
     }
 }
 

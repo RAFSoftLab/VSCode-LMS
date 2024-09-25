@@ -54,6 +54,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           vscode.window.showErrorMessage(data.value);
           break;
         }
+        case "commit": {
+          if (!data.value) {
+            return;
+          }
+          const tokenManager = TokenManager.getInstance();
+          const branch = tokenManager.getForkBranch();
+          const repositoryPath = tokenManager.getRepoPath();
+          if(repositoryPath && branch){
+            await authenticate.pushToRepo(repositoryPath, branch, `Student je predao rad ${data.value}`);
+          } 
+        }
       }
     });
 
