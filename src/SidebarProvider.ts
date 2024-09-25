@@ -25,45 +25,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
-        // case "onInfo": {
-        //   if (!data.value) {
-        //     return;
-        //   }
-
-        //   try {
-        //     // Endpoint za dohvat studenata
-        //     const endpoint = 'http://192.168.124.28:8091/api/v1/students/' + data.value;
-
-        //     // Token za autorizaciju
-        //     const API_TOKEN = "L2aTA643Z0UJ43bIdBymFExVbpqZg7v5QJafYh6KFRjl04eV6w4TtdppkX41hEwo";
-
-        //     // Konfiguracija zahteva sa tokenom
-        //     const config = {
-        //       headers: {
-        //         'Authorization': `Bearer ${API_TOKEN}`
-        //       }
-        //     };
-        //     vscode.window.showInformationMessage(data.value);
-
-        //     // Izvršavanje GET zahteva sa autorizacijom
-        //     const response: AxiosResponse = await axios.get(endpoint, config);
-
-        //     // Provera da li je odgovor uspešan (status 200)
-        //     if (response.status === 200) {
-        //       webviewView.webview.postMessage({
-        //         type: "student-info",
-        //         value: response.data,
-        //       });
-        //     } else {
-        //       // Ukoliko odgovor nije uspešan, prikaži odgovarajuću poruku
-        //       throw new Error(`Error fetching students: ${response.statusText}`);
-        //     }
-        //   } catch (error: any) {
-        //     // Prikazivanje greške ako dođe do problema
-        //     vscode.window.showErrorMessage(`Error fetching students: ${error.message}`);
-        //   }
-        //   break;
-        // }
         case "authorize-token": {
           if (!data.value) {
             return;
@@ -75,12 +36,16 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           const token = tokenManager.getToken();
           console.log(token);
           if (token) {
-            const repositoryData = await authenticate.getRepo(data.value, token, "OopZadatak1");
-            console.log('Repository data:', repositoryData);
+            await authenticate.getRepo(data.value, token, "OopZadatak1");
+            const repositoryPath = tokenManager.getRepoPath();
+            console.log('Repository data:', repositoryPath);
+            await authenticate.getFork(data.value, token);
             // Brisanje svih stavki u radnom direktorijumu 
             deleteAllItemsInWorkspace();
+            if (repositoryPath) {
+              await authenticate.cloneRepo(repositoryPath);
+            }
           }
-
         }
         case "onError": {
           if (!data.value) {

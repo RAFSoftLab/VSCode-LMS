@@ -3,12 +3,18 @@ import { SidebarProvider } from './SidebarProvider';
 import simpleGit, { SimpleGit } from 'simple-git';
 import * as os from 'os';
 import axios, { type AxiosResponse } from 'axios';
+import TokenManager from "./TokenManager";
+
 
 const username = "raf";
 const password = "masterSI2023";
 
 export function activate(context: vscode.ExtensionContext) {
+  //context.globalState.update('studentData', null);
   // Kreiranje i prikazivanje panela
+  const tokenManager = TokenManager.getInstance();
+  tokenManager.setFirstLoad(false);
+  
   const sidebarProvider = new SidebarProvider(context.extensionUri);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -34,14 +40,35 @@ export function activate(context: vscode.ExtensionContext) {
     // Kombinuj ih u željeni format
     return `${program}${index}${year}`;
   }
+
+  function extractClassroomNumber(input: string): string {
+    // Prvo ukloni prefiks "U"
+    let numberPart = input.substring(1, 3); // Uzmi samo brojčani deo nakon "U" i pre "01"
+    
+    // Pretvori string u broj
+    let classroomNumber = parseInt(numberPart, 10);
+    
+    // Ako je broj manji od 10, ukloni vodeću nulu
+    if (classroomNumber < 10) {
+        return classroomNumber.toString();
+    }
+    
+    return numberPart;
+}
   context.subscriptions.push(vscode.commands.registerCommand('vscode-lms.startLMS', async () => {
     //const studentusername = getUsername();
+    const computername = "U0401";
+    const classroom = extractClassroomNumber(computername);
     const studentuser = "parnautovic4823m";
     const studentusername = parseStudentId("parnautovic4823m");
 
     sidebarProvider._view?.webview.postMessage({
       type: "user-info",
       value: studentuser,
+    });
+    sidebarProvider._view?.webview.postMessage({
+      type: "classroom-info",
+      value: classroom,
     });
 
     try {

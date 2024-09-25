@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
 
+  let state = tsvscode.getState();
+  let firstTimeLoaded = state ? state.firstTimeLoaded : false; // Flag to check if the extension is loaded for the first time
   let firstName: string = "";
   let lastName: string = "";
   let program: string = "";
@@ -8,6 +10,10 @@
   let year: number;
   let classroom: string = "";
   let studentId: string = "";
+
+  $: {
+    tsvscode.setState({ firstTimeLoaded });
+  }
 
   function parseStudentId(input: string): string {
     // Izvuci poslednji karakter (program)
@@ -40,16 +46,25 @@
   }
 
   onMount(async () => {
+    // Brisanje podataka iz localStorage prilikom svakog pokretanja ekstenzije
+    console.log(tsvscode.getState());
+    if (!firstTimeLoaded) {
+      localStorage.removeItem("studentData");
+      console.log("ULAZI U FIRST LOAD!!!!!!!!!!!!!");
+      console.log(tsvscode.getState());
+    }
     const savedData = localStorage.getItem("studentData");
     if (savedData) {
+      console.log("SAAAVEEEEEEEEEEEE USAO U SAVEDATA");
       const parsedData = JSON.parse(savedData);
-      firstName = parsedData.firstName || "";
-      lastName = parsedData.lastName || "";
-      program = parsedData.program || "";
-      number = parsedData.number || 0;
-      year = parsedData.year || 0;
-      classroom = parsedData.classroom || "";
-      studentId = parsedData.studentId || "";
+      console.log(savedData);
+      firstName = parsedData.firstName;
+      lastName = parsedData.lastName;
+      program = parsedData.program;
+      number = parsedData.number;
+      year = parsedData.year;
+      classroom = parsedData.classroom;
+      studentId = parsedData.studentId;
     }
     window.addEventListener("message", async (event) => {
       const message = event.data; // Podaci u JSON formatu koje je ekstenzija poslala
@@ -70,24 +85,29 @@
           console.log(message.value);
           studentId = parseStudentId(message.value);
         }
+        case "classroom-info": {
+          classroom = message.value;
+        }
       }
-      // Čuvanje podataka u lokalnom skladištu prilikom svake promene
+      //if (!firstTimeLoaded) {
+      //console.log("SAAAVEEEEEEEEEEEE");
+      //firstTimeLoaded = true; // Set the flag to prevent further clears in the same session
       saveDataLocally();
+      // }
     });
   });
-  onDestroy(() => {
-    // Brisanje podataka iz lokalnog skladišta kada se komponenta uništi
-    //localStorage.clear();
-    localStorage.getItem("studentData");
-    // Resetovanje vrednosti let promenljivih
-    firstName = "";
-    lastName = "";
-    program = "";
-    number = 0;
-    year = 0;
-    classroom = "";
-    studentId = "";
-  });
+
+  function handleBeginClick() {
+    tsvscode.postMessage({ type: "authorize-token", value: studentId });
+    firstTimeLoaded = true;
+    tsvscode.setState({ firstTimeLoaded });
+    console.log("CONSOOOLEEEEEEEE");
+    console.log(tsvscode.getState());
+  }
+
+  function handleCommitClick() {
+    firstTimeLoaded = false;
+  }
 </script>
 
 <h3>Your Information</h3>
@@ -113,15 +133,27 @@
 <label for="studentId">Student ID:</label>
 <input type="text" id="studentId" bind:value={studentId} />
 
-<button
-  on:click={() => {
-    //tsvscode.postMessage({ type: "onInfo", value: studentId });
-    tsvscode.postMessage({ type: "authorize-token", value: studentId });
-  }}>Begin</button
->
+<!-- Begin Button -->
+<button on:click={handleBeginClick} disabled={firstTimeLoaded}> Begin </button>
+
+<!-- Commit Button -->
+<button on:click={handleCommitClick} disabled={!firstTimeLoaded}>
+  Commit
+</button>
 
 <style>
   button {
     background-color: blue;
+    color: white;
+    padding: 8px;
+    margin: 4px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    background-color: grey;
+    cursor: not-allowed;
   }
 </style>
