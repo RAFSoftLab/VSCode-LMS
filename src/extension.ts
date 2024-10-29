@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Kreiranje i prikazivanje panela
   const tokenManager = TokenManager.getInstance();
   tokenManager.setFirstLoad(false);
-  
+
   const sidebarProvider = new SidebarProvider(context.extensionUri);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -22,9 +22,11 @@ export function activate(context: vscode.ExtensionContext) {
       sidebarProvider
     )
   );
+
   function getUsername(): string {
     return os.userInfo().username;
   }
+  
   function parseStudentId(input: string): string {
     // Izvuci poslednji karakter (program)
     const program = input.slice(-1).toUpperCase();
