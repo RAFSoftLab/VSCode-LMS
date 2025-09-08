@@ -90,6 +90,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "node-ssh": "^13.2.1",
     "save-dev": "^0.0.1-security",
     "simple-git": "^3.24.0"
   }

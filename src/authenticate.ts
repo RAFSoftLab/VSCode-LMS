@@ -130,12 +130,12 @@ export async function cloneRepo(repoPath: string) {
 
         // Postavljanje kredencijala ako su dostupni
         if (username && password) {
-            git.addConfig('user.name', username);
-            git.addConfig('user.password', password);
+            git.addConfig('user.name', 'foo');
+            git.addConfig('user.password', 'foo');
         }
 
         // Kloniranje repozitorijuma
-        await git.clone('http://raf@192.168.124.28:/' + repoPath, projectPath);
+        await git.clone('http://foo@192.168.1.187/' + repoPath, path.join(projectPath, repoPath.replace(/\.git$/, '')));
 
         // Obaveštenj e o uspešnom kloniranju
         vscode.window.showInformationMessage("Repository cloned successfully!");
@@ -146,9 +146,17 @@ export async function cloneRepo(repoPath: string) {
 }
 
 export async function pushToRepo(repoPath: string, branchName: string, message: string): Promise<boolean> {
-    const git = simpleGit(repoPath);
-
     try {
+        const workspacePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+        if (!workspacePath) {
+            vscode.window.showErrorMessage("No workspace opened.");
+            return false;
+        }
+
+        const repoFullPath = path.join(workspacePath, repoPath);
+        const cleanRepoPath = normalizeRepoPath(repoFullPath);
+        const git = simpleGit(cleanRepoPath);
+
         // Provera da li postoji branch
         const branches = await git.branchLocal();
         const branchExists = branches.all.includes(branchName);
@@ -160,25 +168,25 @@ export async function pushToRepo(repoPath: string, branchName: string, message: 
         } else {
             // Prebacivanje na postojeći branch
             await git.checkout(branchName);
-
-            // Pokušaj pull-a pre push-a
+             // Pokušaj pull-a pre push-a
             try {
-                const result = await git.pull('origin', branchName, {'--rebase': 'true'});
+                await git.pull('origin', branchName, {'--rebase': 'true'});
                 vscode.window.showInformationMessage("Repository successfully updated.");
-            } catch (pullError) {
+            } catch {
                 vscode.window.showErrorMessage("Pull failed, check conflicts and repository status");
                 return false; // Ako pull ne uspe, prekinuti dalje izvršavanje
             }
         }
 
-        // Dodavanje promena
         await git.add('./*');
 
-        // Kreiranje commit-a
-        await git.commit(message);
+        try {
+            await git.commit(message);
+        } catch {
+            vscode.window.showWarningMessage("No changes to commit.");
+        }
 
-        // Push promena
-        await git.push('origin', branchName);
+        await git.push(['-u', 'origin', branchName]);
         vscode.window.showInformationMessage("Push to repository completed successfully.");
         return true;
     } catch (error: any) {
@@ -186,6 +194,11 @@ export async function pushToRepo(repoPath: string, branchName: string, message: 
         return false;
     }
 }
+
+function normalizeRepoPath(repoPath: string): string {
+    return repoPath.replace(/\.git$/, '');
+}
+
 
 export function parseStudentId(input: string): string {
     // Izvuci poslednji karakter (program)
