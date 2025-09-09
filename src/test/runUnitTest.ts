@@ -1,8 +1,8 @@
 import * as path from "path";
-import Mocha from "mocha";
+import Mocha = require("mocha"); // <-- ovo je pravi način
 import { glob } from "glob";
 
-export async function run(): Promise<void> {
+export async function run() {
   const mocha = new Mocha({
     ui: "bdd", // koristi describe/it
     color: true,
@@ -10,10 +10,16 @@ export async function run(): Promise<void> {
 
   const testsRoot = path.resolve(__dirname, "suite");
 
-  const files = await glob("**/*.test.js", { cwd: testsRoot, absolute: true });
+  // Nađi sve test fajlove osim extension.test.js
+  const files = await glob("**/*.test.js", {
+    cwd: testsRoot,
+    absolute: true,
+    ignore: ["**/extension.test.js"],
+  });
+
   files.forEach((f) => mocha.addFile(f));
 
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     mocha.run((failures) => {
       if (failures > 0) {
         reject(new Error(`${failures} tests failed.`));
@@ -24,7 +30,6 @@ export async function run(): Promise<void> {
   });
 }
 
-// ako se fajl pokreće direktno sa `node`
 if (require.main === module) {
   run().catch((err) => {
     console.error(err);

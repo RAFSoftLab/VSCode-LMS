@@ -59,6 +59,7 @@
     "pretest": "npm run compile-tests",
     "lint": "eslint src --ext ts",
     "test": "npm run compile-tests && node ./out/test/runTest.js",
+    "test:suite": "node ./out/test/runUnitTest.js",
     "test:integration": "npm run compile:integration && node ./out/test/runIntegrationTest.js",
     "compile:integration": "tsc -p ./tsconfig.integration.json"
   },
