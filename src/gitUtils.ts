@@ -1,4 +1,5 @@
 import { simpleGit } from "simple-git";
+import axios, { AxiosResponse } from "axios";
 
 export async function cloneRepoTest(repoUrl: string, targetPath: string): Promise<boolean> {
   try {
@@ -35,3 +36,53 @@ export async function pushToRepoTest(repoPath: string, branchName: string, messa
     return false;
   }
 }
+
+export async function authorizeStudentTest(studentId: string): Promise<boolean> {
+    try {
+      const endpoint = `http://fake-server/api/v1/students/${studentId}/authorize`;
+  
+      const API_TOKEN = "HARDCODED_API_TOKEN";
+  
+      const config = {
+        headers: {
+          Authorization: `Bearer ${API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      };
+  
+      const response: AxiosResponse = await axios.post(endpoint, {}, config);
+  
+      return response.status === 200;
+    } catch (error: any) {
+      console.error(`Authorize failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  export async function getRepoTest(studentId: string, token: string, exam: string): Promise<string | null> {
+    try {
+      const endpoint = `http://fake-server/api/v1/students/${studentId}/repository/${token}/exam/${exam}`;
+  
+      const API_TOKEN = "HARDCODED_API_TOKEN";
+  
+      const config = {
+        headers: {
+          Authorization: `Bearer ${API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      };
+  
+      const response: AxiosResponse = await axios.get(endpoint, config);
+  
+      if (response.status === 200) {
+        // server vraća { message: "..." }
+        const message = JSON.parse(response.data.message);
+        return message;
+      }
+  
+      return null;
+    } catch (error: any) {
+      console.error(`GetRepo failed: ${error.message}`);
+      return null;
+    }
+  }
