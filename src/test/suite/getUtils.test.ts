@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import * as sinon from "sinon";
-import * as simpleGit from "simple-git";   // ⬅️ NAMED import
+import * as simpleGit from "simple-git";   // NAMED import
 import { cloneRepoTest, pushToRepoTest } from "../../gitUtils";
 
 describe("Git Utils Unit Test Suite", () => {
@@ -26,7 +26,7 @@ describe("Git Utils Unit Test Suite", () => {
     sinon.restore();
   });
 
-  // ✅ Pozitivni testovi
+  // Pozitivni testovi
   it("treba da uspešno klonira repo", async () => {
     const result = await cloneRepoTest("http://fake-url/repo.git", "./tmp/clone-1");
 
@@ -46,7 +46,7 @@ describe("Git Utils Unit Test Suite", () => {
     assert.ok(gitStub.push.calledOnce, "Očekivano je da se pozove git.push()");
   });
 
-  // ❌ Negativni testovi
+  // Negativni testovi
   it("treba da vrati false ako clone baci grešku", async () => {
     gitStub.clone.rejects(new Error("Simulirana greška u clone"));
 
