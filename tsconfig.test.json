@@ -1,0 +1,11 @@
+{
+    "//": "⬅️ NOVO: kompajl spec za UNIT/SUITE testove",
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "outDir": "./out/test/suite",
+      "types": ["mocha", "node"],
+      "esModuleInterop": true
+    },
+    "include": ["src/test/suite/**/*.ts"]
+  }
+  

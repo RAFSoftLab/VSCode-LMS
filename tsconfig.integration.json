@@ -1,0 +1,22 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "outDir": "out",
+      "rootDir": "src",
+      "types": ["mocha", "node", "vscode"],
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "skipLibCheck": true
+    },
+    "include": [
+      "src/test/integration/**/*.ts",
+      "src/test/runIntegrationTest.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      ".vscode-test",
+      "webviews"
+    ]
+  }
+  
